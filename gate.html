@@ -8,14 +8,14 @@
         .terminal { background: rgba(22, 30, 49, 0.7); border: 1px solid #1e293b; border-radius: 24px; padding: 30px; box-shadow: 0 20px 40px rgba(0,0,0,0.5); text-align: center; width: 100%; max-width: 450px; backdrop-filter: blur(10px); }
         h1 { font-size: 20px; color: #94a3b8; text-transform: uppercase; margin: 0 0 5px 0; tracking: 1px; }
         .clock { font-family: monospace; font-size: 24px; color: #38bdf8; margin-bottom: 20px; text-shadow: 0 0 10px rgba(56,189,248,0.4); }
-        
-        /* Camera Frame Box Styling */
         #reader { width: 100%; background: #0f172a; border-radius: 16px; overflow: hidden; border: 2px dashed #334155 !important; }
         #reader __dashboard { padding: 10px; background: #131c2e; }
         button { background: linear-gradient(135deg, #0284c7, #0369a1); border: none; color: white; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: bold; margin: 10px 0; }
-        
-        #status { font-size: 18px; margin-top: 20px; color: #64748b; font-weight: 500; text-transform: uppercase; letter-spacing: 1px; }
+        #status { font-size: 18px; margin-top: 20px; color: #64748b; font-weight: 500; text-transform: uppercase; letter-spacing: 1px; min-height: 50px; }
         .hint { font-size: 12px; color: #475569; margin-top: 15px; }
+        .quick-text { margin-top: 20px; font-size: 11px; color: #64748b; font-weight: 600; text-transform: uppercase; }
+        .student-row { display: flex; gap: 8px; justify-content: center; margin-top: 8px; }
+        .std-btn { background: #1e293b; border: 1px solid #334155; color: #cbd5e1; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; }
     </style>
     <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
 </head>
@@ -28,6 +28,14 @@
         <div id="reader"></div>
         
         <div id="status">Scanning Environment Ready</div>
+        
+        <div class="quick-text">Manual Test Taps (Fallback)</div>
+        <div class="student-row">
+            <button class="std-btn" onclick="onScanSuccess('11234')">Dawood (11234)</button>
+            <button class="std-btn" onclick="onScanSuccess('11345')">Azaan (11345)</button>
+            <button class="std-btn" onclick="onScanSuccess('9776')">Hishaam (9776)</button>
+        </div>
+
         <div class="hint">Hold student card QR badge steady inside the tracking frame box</div>
     </div>
 
@@ -53,14 +61,12 @@
         let lastScannedId = null;
         let scanThrottleTimeout = null;
 
-        // Code logic executed when webcam captures a valid QR text string
-        function onScanSuccess(decodedText, decodedResult) {
-            // Prevent duplicate rapid logging spam of the same code card sequentially
+        function onScanSuccess(decodedText) {
             if (decodedText === lastScannedId) return;
             
             lastScannedId = decodedText;
             clearTimeout(scanThrottleTimeout);
-            scanThrottleTimeout = setTimeout(() => { lastScannedId = null; }, 5000); // Reset filter after 5 seconds
+            scanThrottleTimeout = setTimeout(() => { lastScannedId = null; }, 4000);
 
             const status = document.getElementById('status');
             status.innerText = `Token Detected: #${decodedText}`;
@@ -80,7 +86,7 @@
                         setTimeout(() => { status.innerText = "Scanning Environment Ready"; status.style.color = "#64748b"; }, 3000);
                     });
                 } else {
-                    status.innerText = "ERROR: UNKNOWN ID DISCOVERED";
+                    status.innerText = `ERROR: UNKNOWN ID (#${decodedText})`;
                     status.style.color = "#ef4444";
                     setTimeout(() => { status.innerText = "Scanning Environment Ready"; status.style.color = "#64748b"; }, 3000);
                 }
@@ -90,7 +96,6 @@
             });
         }
 
-        // Initialize and bind camera overlay viewframe
         const html5QrcodeScanner = new Html5QrcodeScanner("reader", { 
             fps: 10, 
             qrbox: { width: 250, height: 250 },
