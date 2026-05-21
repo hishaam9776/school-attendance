@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Parent Guard App</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background: #090d16; color: white; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .phone-frame { width: 375px; height: 720px; background: #111827; border: 12px solid #374151; border-radius: 40px; padding: 25px 20px; display: flex; flex-direction: column; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.7); box-sizing: border-box; position: relative; }
+        .phone-frame::before { content: ''; position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: 140px; height: 25px; background: #374151; border-bottom-left-radius: 15px; border-bottom-right-radius: 15px; z-index: 10; }
+        .header { text-align: center; margin-top: 15px; margin-bottom: 20px; }
+        .header h3 { margin: 0; font-size: 20px; font-weight: 600; color: #f3f4f6; }
+        .p-clock { font-family: monospace; font-size: 14px; color: #6b7280; margin-top: 4px; }
+        .notif-feed { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; padding-right: 4px; }
+        .card { background: rgba(31, 41, 55, 0.6); border: 1px solid rgba(255,255,255,0.03); padding: 16px; border-radius: 14px; border-left: 4px solid #3b82f6; backdrop-filter: blur(10px); animation: slide 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
+        .card.danger { border-left-color: #ef4444; background: rgba(220, 38, 38, 0.1); box-shadow: 0 0 20px rgba(239,68,68,0.15); animation: shake 0.4s ease; border-top: 1px solid rgba(239,68,68,0.2); border-right: 1px solid rgba(239,68,68,0.2); }
+        .card.success { border-left-color: #10b981; background: rgba(16, 185, 129, 0.1); }
+        @keyframes slide { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes shake { 0%, 100% { transform: translateX(0); } 20%, 60% { transform: translateX(-6px); } 40%, 80% { transform: translateX(6px); } }
+        .card-title { font-size: 14px; font-weight: 700; text-transform: uppercase; tracking: 0.5px; display: flex; justify-content: space-between; }
+        .card-title span { font-size: 11px; font-weight: 400; color: #9ca3af; font-family: monospace; }
+        .card p { margin: 6px 0 0 0; font-size: 13px; color: #d1d5db; line-height: 1.4; }
+    </style>
+</head>
+<body>
+
+    <div class="phone-frame">
+        <div class="header">
+            <h3>GuardEdu Parent</h3>
+            <div class="p-clock" id="pClock">00:00:00 PM</div>
+        </div>
+        <div class="notif-feed" id="feed">
+            <div style="text-align:center; color:#4b5563; font-size:14px; margin-top:150px;">Awaiting school signal broadcast data...</div>
+        </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    <script>
+        const firebaseConfig = {
+          apiKey: "AIzaSyCWABDPdb4V7oq3i1RyN4dvQQfQ1YwGejE",
+          authDomain: "schoolattendance-1fcbf.firebaseapp.com",
+          projectId: "schoolattendance-1fcbf",
+          storageBucket: "schoolattendance-1fcbf.firebasestorage.app",
+          messagingSenderId: "833618260068",
+          appId: "1:833618260068:web:70ee19bd5b2d3195b0af71"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        function updateClock() {
+            document.getElementById('pClock').innerText = new Date().toLocaleTimeString();
+        }
+        setInterval(updateClock, 1000); updateClock();
+
+        db.collection("students").onSnapshot((snapshot) => {
+            const feed = document.getElementById("feed");
+            feed.innerHTML = ""; 
+            const timeString = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+
+            snapshot.forEach((doc) => {
+                const student = doc.data();
+                const formattedPeriod = student.lastUpdatedPeriod ? student.lastUpdatedPeriod.replace(/_/g, ' ') : '';
+                
+                if(student.gateCheckedIn && student.currentClassStatus === "In Hallways") {
+                    feed.innerHTML += `
+                        <div class="card success">
+                            <div class="card-title" style="color:#10b981;">🎒 Facility Entry <span>${student.gateTime || timeString}</span></div>
+                            <p>Verification notice: <strong>${student.name}</strong> crossed the main gate entrance detector check.</p>
+                        </div>
+                    `;
+                }
+                
+                if(student.currentClassStatus === "⚠️ TRUANCY ALERT") {
+                    feed.innerHTML += `
+                        <div class="card danger">
+                            <div class="card-title" style="color:#ef4444;">🚨 TRUANCY EMERGENCY <span>${timeString}</span></div>
+                            <p><strong>CRITICAL RISK WARNING:</strong> ${student.name} skipped class during <strong>${formattedPeriod}</strong> despite being logged inside the school building!</p>
+                        </div>
+                    `;
+                }
+
+                if(student.currentClassStatus === "Present") {
+                    feed.innerHTML += `
+                        <div class="card success">
+                            <div class="card-title" style="color:#34d399;">✅ Class Attendance <span>${timeString}</span></div>
+                            <p>Instructor verified: <strong>${student.name}</strong> is present at their desk for ${formattedPeriod}.</p>
+                        </div>
+                    `;
+                }
+
+                if(student.currentClassStatus === "Absent") {
+                    feed.innerHTML += `
+                        <div class="card" style="border-left-color: #6b7280;">
+                            <div class="card-title" style="color:#9ca3af;">ℹ Absence Confirmed <span>${timeString}</span></div>
+                            <p>Standard data log: ${student.name} is noted absent for ${formattedPeriod}. No corresponding gate scan found.</p>
+                        </div>
+                    `;
+                }
+            });
+        });
+    </script>
+</body>
+</html>

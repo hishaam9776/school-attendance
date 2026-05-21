@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Gate Terminal - QR Live Scanner</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background: #0b0f19; color: white; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; margin: 0; padding: 20px; box-sizing: border-box; }
+        .terminal { background: rgba(22, 30, 49, 0.7); border: 1px solid #1e293b; border-radius: 24px; padding: 30px; box-shadow: 0 20px 40px rgba(0,0,0,0.5); text-align: center; width: 100%; max-width: 450px; backdrop-filter: blur(10px); }
+        h1 { font-size: 20px; color: #94a3b8; text-transform: uppercase; margin: 0 0 5px 0; tracking: 1px; }
+        .clock { font-family: monospace; font-size: 24px; color: #38bdf8; margin-bottom: 20px; text-shadow: 0 0 10px rgba(56,189,248,0.4); }
+        
+        /* Camera Frame Box Styling */
+        #reader { width: 100%; background: #0f172a; border-radius: 16px; overflow: hidden; border: 2px dashed #334155 !important; }
+        #reader __dashboard { padding: 10px; background: #131c2e; }
+        button { background: linear-gradient(135deg, #0284c7, #0369a1); border: none; color: white; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: bold; margin: 10px 0; }
+        
+        #status { font-size: 18px; margin-top: 20px; color: #64748b; font-weight: 500; text-transform: uppercase; letter-spacing: 1px; }
+        .hint { font-size: 12px; color: #475569; margin-top: 15px; }
+    </style>
+    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+</head>
+<body>
+
+    <div class="terminal">
+        <h1>Campus Scanner Terminal</h1>
+        <div class="clock" id="clock">00:00:00 PM</div>
+        
+        <div id="reader"></div>
+        
+        <div id="status">Scanning Environment Ready</div>
+        <div class="hint">Hold student card QR badge steady inside the tracking frame box</div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    <script>
+        const firebaseConfig = {
+          apiKey: "AIzaSyCWABDPdb4V7oq3i1RyN4dvQQfQ1YwGejE",
+          authDomain: "schoolattendance-1fcbf.firebaseapp.com",
+          projectId: "schoolattendance-1fcbf",
+          storageBucket: "schoolattendance-1fcbf.firebasestorage.app",
+          messagingSenderId: "833618260068",
+          appId: "1:833618260068:web:70ee19bd5b2d3195b0af71"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        function updateClock() {
+            document.getElementById('clock').innerText = new Date().toLocaleTimeString();
+        }
+        setInterval(updateClock, 1000); updateClock();
+
+        let lastScannedId = null;
+        let scanThrottleTimeout = null;
+
+        // Code logic executed when webcam captures a valid QR text string
+        function onScanSuccess(decodedText, decodedResult) {
+            // Prevent duplicate rapid logging spam of the same code card sequentially
+            if (decodedText === lastScannedId) return;
+            
+            lastScannedId = decodedText;
+            clearTimeout(scanThrottleTimeout);
+            scanThrottleTimeout = setTimeout(() => { lastScannedId = null; }, 5000); // Reset filter after 5 seconds
+
+            const status = document.getElementById('status');
+            status.innerText = `Token Detected: #${decodedText}`;
+            status.style.color = "#eab308";
+
+            db.collection("students").doc(decodedText).get().then((doc) => {
+                if (doc.exists) {
+                    const studentName = doc.data().name;
+                    
+                    db.collection("students").doc(decodedText).set({
+                        gateCheckedIn: true,
+                        gateTime: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
+                        currentClassStatus: "In Hallways"
+                    }, { merge: true }).then(() => {
+                        status.innerHTML = `ACCESS GRANTED:<br><span style="color:white; font-size:22px;">${studentName} ✔</span>`;
+                        status.style.color = "#22c55e";
+                        setTimeout(() => { status.innerText = "Scanning Environment Ready"; status.style.color = "#64748b"; }, 3000);
+                    });
+                } else {
+                    status.innerText = "ERROR: UNKNOWN ID DISCOVERED";
+                    status.style.color = "#ef4444";
+                    setTimeout(() => { status.innerText = "Scanning Environment Ready"; status.style.color = "#64748b"; }, 3000);
+                }
+            }).catch(err => {
+                status.innerText = "NETWORK DATABASE TIMEOUT";
+                status.style.color = "#ef4444";
+            });
+        }
+
+        // Initialize and bind camera overlay viewframe
+        const html5QrcodeScanner = new Html5QrcodeScanner("reader", { 
+            fps: 10, 
+            qrbox: { width: 250, height: 250 },
+            rememberLastUsedCamera: true
+        });
+        html5QrcodeScanner.render(onScanSuccess);
+    </script>
+</body>
+</html>

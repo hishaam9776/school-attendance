@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>GuardEdu - Attendance Ecosystem Hub</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background: radial-gradient(circle at top right, #1e1b4b, #0f172a); color: white; margin: 0; padding: 40px; min-height: 100vh; box-sizing: border-box; }
+        .hero { text-align: center; margin-bottom: 50px; }
+        .hero h1 { font-size: 42px; margin: 0 0 10px 0; background: linear-gradient(to right, #38bdf8, #818cf8); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .hero p { color: #94a3b8; font-size: 18px; margin: 0; }
+        .clock { font-size: 20px; color: #38bdf8; font-family: monospace; margin-top: 15px; text-shadow: 0 0 10px rgba(56,189,248,0.3); }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 25px; max-width: 1100px; margin: 0 auto; }
+        .card { background: rgba(30, 41, 59, 0.4); border: 1px solid rgba(255,255,255,0.05); backdrop-filter: blur(12px); border-radius: 16px; padding: 30px; text-align: center; transition: all 0.3s ease; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
+        .card:hover { transform: translateY(-5px); border-color: rgba(56, 189, 248, 0.4); box-shadow: 0 15px 35px rgba(56,189,248,0.1); }
+        .icon { font-size: 40px; margin-bottom: 15px; }
+        .card h3 { font-size: 22px; margin: 0 0 10px 0; color: #f1f5f9; }
+        .card p { color: #94a3b8; font-size: 14px; line-height: 1.5; margin-bottom: 25px; height: 60px; }
+        .btn { display: inline-block; padding: 12px 24px; background: linear-gradient(135deg, #38bdf8, #2563eb); color: white; text-decoration: none; border-radius: 8px; font-weight: bold; transition: opacity 0.2s; box-shadow: 0 4px 15px rgba(37,99,235,0.3); }
+        .btn:hover { opacity: 0.9; }
+    </style>
+</head>
+<body>
+
+    <div class="hero">
+        <h1>GuardEdu Ecosystem</h1>
+        <p>Smart IoT Attendance, Multi-Period Roster Tracking & Real-Time Parent Alarms</p>
+        <div class="clock" id="liveClock">00:00:00 PM</div>
+    </div>
+
+    <div class="grid">
+        <div class="card">
+            <div class="icon">🏫</div>
+            <h3>1. Gate Scanner</h3>
+            <p>Simulates the main school entrance NFC/RFID tap event when students enter the campus building.</p>
+            <a href="gate.html" class="btn" target="_blank">Launch Gate Terminal</a>
+        </div>
+        <div class="card">
+            <div class="icon">📋</div>
+            <h3>2. Teacher Dashboard</h3>
+            <p>Allows active subject instructors to crosscheck physical presence across 10 scheduling periods dynamically.</p>
+            <a href="teacher.html" class="btn" target="_blank">Open Roster Portal</a>
+        </div>
+        <div class="card">
+            <div class="icon">📱</div>
+            <h3>3. Parent Portal</h3>
+            <p>Receives dynamic pushes and flashes critical color-coded warning frames if a child cuts an assigned class.</p>
+            <a href="parent.html" class="btn" target="_blank">Simulate Parent Mobile</a>
+        </div>
+    </div>
+
+    <script>
+        function updateClock() {
+            const now = new Date();
+            document.getElementById('liveClock').innerText = now.toLocaleTimeString();
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+    </script>
+</body>
+</html>

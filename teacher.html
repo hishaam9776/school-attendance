@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Faculty Portal</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background: #090d16; color: #f1f5f9; padding: 40px; margin: 0; }
+        .wrapper { max-width: 1100px; margin: 0 auto; }
+        .top-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+        h1 { margin: 0; font-size: 26px; font-weight: 600; color: #f8fafc; }
+        .clock { font-family: monospace; font-size: 20px; color: #818cf8; background: rgba(129,140,248,0.1); padding: 8px 16px; border-radius: 8px; border: 1px solid rgba(129,140,248,0.2); }
+        select { padding: 12px; background: #131c2e; color: white; border-radius: 8px; border: 1px solid #1e293b; font-size: 15px; width: 320px; outline: none; }
+        select:focus { border-color: #818cf8; }
+        .roster-card { background: rgba(19, 28, 46, 0.6); border: 1px solid #1e293b; border-radius: 16px; overflow: hidden; backdrop-filter: blur(10px); }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 18px 24px; text-align: left; border-bottom: 1px solid #1e293b; }
+        th { background: #131c2e; color: #94a3b8; font-size: 13px; text-transform: uppercase; tracking: 0.5px; }
+        .btn { padding: 8px 16px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 13px; margin-right: 8px; transition: all 0.2s; }
+        .btn-present { background: rgba(34,197,94,0.15); color: #4ade80; border: 1px solid rgba(34,197,94,0.3); }
+        .btn-present:hover { background: #22c55e; color: white; }
+        .btn-absent { background: rgba(239,68,68,0.15); color: #f87171; border: 1px solid rgba(239,68,68,0.3); }
+        .btn-absent:hover { background: #ef4444; color: white; }
+        .badge { padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+        .badge-inside { background: rgba(34,197,94,0.15); color: #4ade80; }
+        .badge-outside { background: rgba(148,163,184,0.15); color: #94a3b8; }
+        .alert-row { background: rgba(239, 68, 68, 0.08) !important; }
+        .alert-text { color: #f87171; font-weight: bold; text-shadow: 0 0 10px rgba(239,68,68,0.2); }
+    </style>
+</head>
+<body>
+
+    <div class="wrapper">
+        <div class="top-row">
+            <div>
+                <h1>Roster Verification Terminal</h1>
+                <p style="color: #64748b; margin: 5px 0 0 0;">Select a scheduled block to evaluate classroom compliance</p>
+            </div>
+            <div class="clock" id="tClock">00:00:00 PM</div>
+        </div>
+
+        <select id="periodSelect" onchange="loadRoster()">
+            <option value="Period_1_English">Period 1: English Language</option>
+            <option value="Period_2_Math">Period 2: Mathematics</option>
+            <option value="Period_3_Science">Period 3: Physics/Chemistry</option>
+            <option value="Period_4_History">Period 4: History</option>
+            <option value="Period_5_Geography">Period 5: Geography</option>
+            <option value="Period_6_ICT">Period 6: Computer Science</option>
+            <option value="Period_7_Art">Period 7: Fine Arts</option>
+            <option value="Period_8_Biology">Period 8: Biology</option>
+            <option value="Period_9_Economics">Period 9: Economics</option>
+            <option value="Period_10_Civics">Period 10: Civics & Ethics</option>
+        </select>
+
+        <div class="roster-card">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Student Name</th>
+                        <th>Student ID</th>
+                        <th>Gate Entry Status</th>
+                        <th>Roster Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="rosterTableBody"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    <script>
+        const firebaseConfig = {
+          apiKey: "AIzaSyCWABDPdb4V7oq3i1RyN4dvQQfQ1YwGejE",
+          authDomain: "schoolattendance-1fcbf.firebaseapp.com",
+          projectId: "schoolattendance-1fcbf",
+          storageBucket: "schoolattendance-1fcbf.firebasestorage.app",
+          messagingSenderId: "833618260068",
+          appId: "1:833618260068:web:70ee19bd5b2d3195b0af71"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        function updateClock() {
+            document.getElementById('tClock').innerText = new Date().toLocaleTimeString();
+        }
+        setInterval(updateClock, 1000); updateClock();
+
+        function ensureDemoData() {
+            db.collection("students").doc("101").set({ name: "Dawood", gateCheckedIn: false }, {merge: true});
+            db.collection("students").doc("102").set({ name: "Azaan", gateCheckedIn: false }, {merge: true});
+            db.collection("students").doc("103").set({ name: "Hishaam", gateCheckedIn: false }, {merge: true});
+        }
+        ensureDemoData();
+
+        function loadRoster() {
+            const period = document.getElementById("periodSelect").value;
+            
+            db.collection("students").onSnapshot((snapshot) => {
+                const tbody = document.getElementById("rosterTableBody");
+                tbody.innerHTML = "";
+
+                snapshot.forEach((doc) => {
+                    const student = doc.data();
+                    const id = doc.id;
+                    
+                    const gateBadge = student.gateCheckedIn 
+                        ? `<span class="badge badge-inside">🟢 Inside Facility (${student.gateTime})</span>` 
+                        : `<span class="badge badge-outside">🔴 Off Campus</span>`;
+                    
+                    let roomStatus = (student.periods && student.periods[period]) || "Unmarked";
+                    let rowClass = "";
+                    
+                    if(roomStatus === "⚠️ TRUANCY ALERT") {
+                        rowClass = 'class="alert-row"';
+                        roomStatus = `<span class="alert-text">${roomStatus}</span>`;
+                    }
+
+                    tbody.innerHTML += `
+                        <tr ${rowClass}>
+                            <td><strong style="color:#f8fafc">${student.name}</strong></td>
+                            <td style="color:#64748b; font-family:monospace;">#${id}</td>
+                            <td>${gateBadge}</td>
+                            <td style="color:#cbd5e1">${roomStatus}</td>
+                            <td>
+                                <button class="btn btn-present" onclick="setAttendance('${id}', 'Present')">Present</button>
+                                <button class="btn btn-absent" onclick="setAttendance('${id}', 'Absent')">Absent</button>
+                            </td>
+                        </tr>
+                    `;
+                });
+            });
+        }
+
+        function setAttendance(studentId, marker) {
+            const period = document.getElementById("periodSelect").value;
+            db.collection("students").doc(studentId).get().then((doc) => {
+                const student = doc.data();
+                let statusResult = marker;
+
+                if (marker === 'Absent' && student.gateCheckedIn === true) {
+                    statusResult = "⚠️ TRUANCY ALERT";
+                }
+
+                let periodUpdate = {};
+                periodUpdate[`periods.${period}`] = statusResult;
+                periodUpdate[`currentClassStatus`] = statusResult;
+                periodUpdate[`lastUpdatedPeriod`] = period;
+
+                db.collection("students").doc(studentId).update(periodUpdate);
+            });
+        }
+        window.onload = loadRoster;
+    </script>
+</body>
+</html>
