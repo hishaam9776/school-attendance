@@ -2,54 +2,108 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Faculty Portal</title>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background: #090d16; color: #f1f5f9; padding: 40px; margin: 0; }
-        .wrapper { max-width: 1100px; margin: 0 auto; }
-        .top-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
-        h1 { margin: 0; font-size: 26px; font-weight: 600; color: #f8fafc; }
-        .clock { font-family: monospace; font-size: 20px; color: #818cf8; background: rgba(129,140,248,0.1); padding: 8px 16px; border-radius: 8px; border: 1px solid rgba(129,140,248,0.2); }
-        select { padding: 12px; background: #131c2e; color: white; border-radius: 8px; border: 1px solid #1e293b; font-size: 15px; width: 320px; outline: none; }
+        body { 
+            font-family: 'Segoe UI', sans-serif; 
+            background: radial-gradient(circle at 0% 0%, #0f172a 0%, #05070f 70%); 
+            color: #f1f5f9; 
+            padding: 40px 20px; 
+            margin: 0;
+            min-height: 100vh;
+            box-sizing: border-box;
+        }
+        .wrapper { max-width: 1100px; margin: 0 auto; width: 100%; }
+        .top-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px; flex-wrap: wrap; gap: 20px; }
+        h1 { margin: 0; font-size: 28px; font-weight: 700; color: #f8fafc; letter-spacing: -0.5px; }
+        .clock { font-family: monospace; font-size: 20px; color: #818cf8; background: rgba(129,140,248,0.06); padding: 10px 20px; border-radius: 12px; border: 1px solid rgba(129,140,248,0.15); box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
+        
+        .controls { margin-bottom: 25px; display: flex; gap: 15px; align-items: center; flex-wrap: wrap; }
+        select { 
+            padding: 14px; background: #0f172a; color: white; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); font-size: 15px; width: 340px; max-width: 100%; outline: none; 
+            box-shadow: 0 4px 10px rgba(0,0,0,0.15); cursor: pointer;
+        }
         select:focus { border-color: #818cf8; }
-        .roster-card { background: rgba(19, 28, 46, 0.6); border: 1px solid #1e293b; border-radius: 16px; overflow: hidden; backdrop-filter: blur(10px); }
+        .reset-btn { 
+            background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); color: #cbd5e1; padding: 14px 24px; border-radius: 12px; cursor: pointer; font-weight: 600; font-size: 14px; transition: all 0.2s; 
+        }
+        .reset-btn:hover { background: #ef4444; color: white; border-color: #ef4444; box-shadow: 0 4px 15px rgba(239,68,68,0.2); }
+        
+        /* Interactive Toast Banner for Errors */
+        .toast-banner {
+            position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(-100px);
+            background: #ef4444; color: white; padding: 14px 28px; border-radius: 12px; font-weight: 700;
+            box-shadow: 0 15px 30px rgba(239, 68, 68, 0.4); z-index: 9999; transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            display: flex; align-items: center; gap: 10px; font-size: 14px; text-transform: uppercase; letter-spacing: 0.5px;
+        }
+        .toast-banner.show { transform: translateX(-50%) translateY(0px); }
+
+        .roster-card { 
+            background: rgba(15, 23, 42, 0.4); border: 1px solid rgba(255,255,255,0.03); border-radius: 20px; overflow: hidden; backdrop-filter: blur(16px); 
+            box-shadow: 0 25px 50px rgba(0,0,0,0.4); width: 100%;
+        }
         table { width: 100%; border-collapse: collapse; }
-        th, td { padding: 18px 24px; text-align: left; border-bottom: 1px solid #1e293b; }
-        th { background: #131c2e; color: #94a3b8; font-size: 13px; text-transform: uppercase; tracking: 0.5px; }
-        .btn { padding: 8px 16px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 13px; margin-right: 8px; transition: all 0.2s; }
-        .btn-present { background: rgba(34,197,94,0.15); color: #4ade80; border: 1px solid rgba(34,197,94,0.3); }
+        th, td { padding: 20px 24px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.03); }
+        th { background: rgba(15, 23, 42, 0.6); color: #64748b; font-size: 12px; text-transform: uppercase; tracking: 1px; font-weight: 700; }
+        
+        .btn { padding: 8px 18px; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 13px; margin-right: 8px; transition: all 0.2s; }
+        .btn-present { background: rgba(34,197,94,0.1); color: #4ade80; border: 1px solid rgba(34,197,94,0.25); }
         .btn-present:hover { background: #22c55e; color: white; }
-        .btn-absent { background: rgba(239,68,68,0.15); color: #f87171; border: 1px solid rgba(239,68,68,0.3); }
+        .btn-absent { background: rgba(239,68,68,0.1); color: #f87171; border: 1px solid rgba(239,68,68,0.25); }
         .btn-absent:hover { background: #ef4444; color: white; }
-        .badge { padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; }
-        .badge-inside { background: rgba(34,197,94,0.15); color: #4ade80; }
-        .badge-outside { background: rgba(148,163,184,0.15); color: #94a3b8; }
-        .alert-row { background: rgba(239, 68, 68, 0.08) !important; }
-        .alert-text { color: #f87171; font-weight: bold; text-shadow: 0 0 10px rgba(239,68,68,0.2); }
+        
+        .badge { padding: 6px 14px; border-radius: 50px; font-size: 12px; font-weight: 600; border: 1px solid transparent; display: inline-block; }
+        .badge-inside { background: rgba(34,197,94,0.08); color: #4ade80; border-color: rgba(34,197,94,0.15); }
+        .badge-outside { background: rgba(148,163,184,0.08); color: #94a3b8; border-color: rgba(148,163,184,0.15); }
+        .badge-left { background: rgba(56,189,248,0.08); color: #38bdf8; border-color: rgba(56,189,248,0.15); }
+        
+        .alert-row { background: rgba(239, 68, 68, 0.05) !important; }
+        .alert-text { color: #f87171; font-weight: 700; text-shadow: 0 0 10px rgba(239,68,68,0.3); }
+
+        @media (max-width: 768px) {
+            body { padding: 20px 10px; }
+            .top-row { flex-direction: column; text-align: center; margin-bottom: 25px; }
+            .controls { flex-direction: column; width: 100%; }
+            select, .reset-btn { width: 100%; text-align: center; }
+            
+            table, thead, tbody, th, td, tr { display: block; }
+            thead { display: none; }
+            tr { padding: 15px; border-bottom: 2px solid rgba(255,255,255,0.05); }
+            td { padding: 8px 0; border: none; display: flex; justify-content: space-between; align-items: center; font-size: 14px; }
+            td::before { content: attr(data-label); font-size: 11px; text-transform: uppercase; color: #64748b; font-weight: 700; }
+            .btn { margin: 4px 0 4px 8px; padding: 10px 16px; }
+        }
     </style>
 </head>
 <body>
 
+    <div id="errorToast" class="toast-banner">⚠️ Action Blocked: Student is physically Outside Campus!</div>
+
     <div class="wrapper">
         <div class="top-row">
             <div>
-                <h1>Roster Verification Terminal</h1>
-                <p style="color: #64748b; margin: 5px 0 0 0;">Select a scheduled block to evaluate classroom compliance</p>
+                <h1>Roster Verification Deck</h1>
+                <p style="color: #475569; margin: 5px 0 0 0; font-size: 15px;">Monitor dynamic room compliance metrics</p>
             </div>
             <div class="clock" id="tClock">00:00:00 PM</div>
         </div>
 
-        <select id="periodSelect" onchange="loadRoster()">
-            <option value="Period_1_English">Period 1: English Language</option>
-            <option value="Period_2_Math">Period 2: Mathematics</option>
-            <option value="Period_3_Science">Period 3: Physics/Chemistry</option>
-            <option value="Period_4_History">Period 4: History</option>
-            <option value="Period_5_Geography">Period 5: Geography</option>
-            <option value="Period_6_ICT">Period 6: Computer Science</option>
-            <option value="Period_7_Art">Period 7: Fine Arts</option>
-            <option value="Period_8_Biology">Period 8: Biology</option>
-            <option value="Period_9_Economics">Period 9: Economics</option>
-            <option value="Period_10_Civics">Period 10: Civics & Ethics</option>
-        </select>
+        <div class="controls">
+            <select id="periodSelect" onchange="loadRoster()">
+                <option value="Period_1_English">Period 1: English Language</option>
+                <option value="Period_2_Math">Period 2: Mathematics</option>
+                <option value="Period_3_Science">Period 3: Physics/Chemistry</option>
+                <option value="Period_4_History">Period 4: History</option>
+                <option value="Period_5_Geography">Period 5: Geography</option>
+                <option value="Period_6_ICT">Period 6: Computer Science</option>
+                <option value="Period_7_Art">Period 7: Fine Arts</option>
+                <option value="Period_8_Biology">Period 8: Biology</option>
+                <option value="Period_9_Economics">Period 9: Economics</option>
+                <option value="Period_10_Civics">Period 10: Civics & Ethics</option>
+            </select>
+            <button class="reset-btn" onclick="resetAllStudents()">🔄 Reset Demo Data</button>
+        </div>
 
         <div class="roster-card">
             <table>
@@ -57,7 +111,7 @@
                     <tr>
                         <th>Student Name</th>
                         <th>Student ID</th>
-                        <th>Gate Entry Status</th>
+                        <th>Building Status</th>
                         <th>Roster Status</th>
                         <th>Actions</th>
                     </tr>
@@ -86,31 +140,47 @@
         }
         setInterval(updateClock, 1000); updateClock();
 
-        function ensureDemoData() {
-            db.collection("students").doc("101").set({ name: "Dawood", gateCheckedIn: false }, {merge: true});
-            db.collection("students").doc("102").set({ name: "Azaan", gateCheckedIn: false }, {merge: true});
-            db.collection("students").doc("103").set({ name: "Hishaam", gateCheckedIn: false }, {merge: true});
+        function showError(message) {
+            const toast = document.getElementById("errorToast");
+            toast.innerText = `⚠️ ${message}`;
+            toast.classList.add("show");
+            setTimeout(() => { toast.classList.remove("show"); }, 3500);
         }
-        ensureDemoData();
+
+        function resetAllStudents() {
+            const batch = db.batch();
+            ["11234", "11345", "9776"].forEach(id => {
+                const ref = db.collection("students").doc(id);
+                batch.set(ref, { gateCheckedIn: false, currentClassStatus: "Off Campus", periods: {}, gateTime: "", gateExitTime: "" }, {merge: true});
+            });
+            batch.commit().then(() => alert("System parameters cleanly restored."));
+        }
 
         function loadRoster() {
             const period = document.getElementById("periodSelect").value;
             
-            db.collection("students").onSnapshot((snapshot) => {
+            db.collection("students").orderBy("name").onSnapshot((snapshot) => {
                 const tbody = document.getElementById("rosterTableBody");
                 tbody.innerHTML = "";
 
                 snapshot.forEach((doc) => {
                     const student = doc.data();
                     const id = doc.id;
-                    
-                    const gateBadge = student.gateCheckedIn 
-                        ? `<span class="badge badge-inside">🟢 Inside Facility (${student.gateTime})</span>` 
-                        : `<span class="badge badge-outside">🔴 Off Campus</span>`;
+                    if(!["11234", "11345", "9776"].includes(id)) return;
+
+                    let gateBadge = `<span class="badge badge-outside">🔴 Off Campus</span>`;
+                    if(student.gateCheckedIn) {
+                        gateBadge = `<span class="badge badge-inside">🟢 Inside Building (${student.gateTime})</span>`;
+                    } else if (student.currentClassStatus === "Logged Out") {
+                        gateBadge = `<span class="badge badge-left">🔵 Departed (${student.gateExitTime})</span>`;
+                    }
                     
                     let roomStatus = (student.periods && student.periods[period]) || "Unmarked";
+                    if (student.currentClassStatus === "Logged Out" && roomStatus === "Unmarked") {
+                        roomStatus = "Left Campus";
+                    }
+
                     let rowClass = "";
-                    
                     if(roomStatus === "⚠️ TRUANCY ALERT") {
                         rowClass = 'class="alert-row"';
                         roomStatus = `<span class="alert-text">${roomStatus}</span>`;
@@ -118,11 +188,11 @@
 
                     tbody.innerHTML += `
                         <tr ${rowClass}>
-                            <td><strong style="color:#f8fafc">${student.name}</strong></td>
-                            <td style="color:#64748b; font-family:monospace;">#${id}</td>
-                            <td>${gateBadge}</td>
-                            <td style="color:#cbd5e1">${roomStatus}</td>
-                            <td>
+                            <td data-label="Student Name"><strong style="color:#f8fafc; font-size:16px;">${student.name}</strong></td>
+                            <td data-label="Student ID" style="color:#475569; font-family:monospace; font-weight:600;">#${id}</td>
+                            <td data-label="Building Status">${gateBadge}</td>
+                            <td data-label="Roster Status" style="color:#cbd5e1; font-weight:500;">${roomStatus}</td>
+                            <td data-label="Actions">
                                 <button class="btn btn-present" onclick="setAttendance('${id}', 'Present')">Present</button>
                                 <button class="btn btn-absent" onclick="setAttendance('${id}', 'Absent')">Absent</button>
                             </td>
@@ -136,6 +206,13 @@
             const period = document.getElementById("periodSelect").value;
             db.collection("students").doc(studentId).get().then((doc) => {
                 const student = doc.data();
+                
+                // 🛑 NEW SECURITY INTERCEPT GAP GATEKEEPER
+                if (marker === 'Present' && !student.gateCheckedIn) {
+                    showError(`Cannot mark ${student.name} Present. Student is currently OUTSIDE campus parameters!`);
+                    return; // Terminates function immediately. Nothing gets written to Firebase.
+                }
+
                 let statusResult = marker;
 
                 if (marker === 'Absent' && student.gateCheckedIn === true) {

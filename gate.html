@@ -2,41 +2,109 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Gate Terminal - QR Live Scanner</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Gate Terminal - Dynamic Scanner</title>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background: #0b0f19; color: white; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; margin: 0; padding: 20px; box-sizing: border-box; }
-        .terminal { background: rgba(22, 30, 49, 0.7); border: 1px solid #1e293b; border-radius: 24px; padding: 30px; box-shadow: 0 20px 40px rgba(0,0,0,0.5); text-align: center; width: 100%; max-width: 450px; backdrop-filter: blur(10px); }
-        h1 { font-size: 20px; color: #94a3b8; text-transform: uppercase; margin: 0 0 5px 0; tracking: 1px; }
-        .clock { font-family: monospace; font-size: 24px; color: #38bdf8; margin-bottom: 20px; text-shadow: 0 0 10px rgba(56,189,248,0.4); }
-        #reader { width: 100%; background: #0f172a; border-radius: 16px; overflow: hidden; border: 2px dashed #334155 !important; }
-        #reader __dashboard { padding: 10px; background: #131c2e; }
-        button { background: linear-gradient(135deg, #0284c7, #0369a1); border: none; color: white; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: bold; margin: 10px 0; }
-        #status { font-size: 18px; margin-top: 20px; color: #64748b; font-weight: 500; text-transform: uppercase; letter-spacing: 1px; min-height: 50px; }
-        .hint { font-size: 12px; color: #475569; margin-top: 15px; }
-        .quick-text { margin-top: 20px; font-size: 11px; color: #64748b; font-weight: 600; text-transform: uppercase; }
-        .student-row { display: flex; gap: 8px; justify-content: center; margin-top: 8px; }
-        .std-btn { background: #1e293b; border: 1px solid #334155; color: #cbd5e1; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; }
+        body { 
+            font-family: 'Segoe UI', sans-serif; 
+            background: #060814; 
+            color: white; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: center; 
+            min-height: 100vh; 
+            margin: 0; 
+            padding: 20px; 
+            box-sizing: border-box; 
+        }
+        .terminal { 
+            background: linear-gradient(145deg, rgba(20, 27, 48, 0.8), rgba(11, 15, 28, 0.8)); 
+            border: 1px solid rgba(255,255,255,0.05); 
+            border-radius: 32px; 
+            padding: 40px 30px; 
+            box-shadow: 0 30px 60px rgba(0,0,0,0.6), inset 0 1px 1px rgba(255,255,255,0.05); 
+            text-align: center; 
+            width: 100%; 
+            max-width: 460px; 
+            backdrop-filter: blur(20px); 
+            box-sizing: border-box;
+        }
+        h1 { font-size: 18px; color: #64748b; text-transform: uppercase; margin: 0 0 5px 0; tracking: 2px; font-weight: 700; }
+        .clock { font-family: monospace; font-size: 32px; color: #38bdf8; margin-bottom: 25px; text-shadow: 0 0 20px rgba(56,189,248,0.5); font-weight: bold; }
+        
+        #reader { 
+            width: 100%; 
+            background: #02040a; 
+            border-radius: 20px; 
+            overflow: hidden; 
+            border: 2px solid rgba(56,189,248,0.2) !important; 
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.8);
+        }
+        #reader button {
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+            border: none; color: white; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 14px; margin: 15px 0;
+            box-shadow: 0 4px 15px rgba(59,130,246,0.3);
+        }
+        
+        #status { 
+            font-size: 16px; 
+            margin-top: 25px; 
+            color: #94a3b8; 
+            font-weight: 600; 
+            text-transform: uppercase; 
+            letter-spacing: 1px; 
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            line-height: 1.4;
+        }
+        .hint { font-size: 13px; color: #475569; margin-top: 20px; border-top: 1px solid rgba(255,255,255,0.03); padding-top: 15px; }
+        .quick-text { margin-top: 25px; font-size: 11px; color: #475569; font-weight: 700; text-transform: uppercase; tracking: 1px; }
+        .student-row { display: flex; gap: 8px; justify-content: center; margin-top: 10px; flex-wrap: wrap; }
+        .std-btn { 
+            background: rgba(30, 41, 59, 0.5); 
+            border: 1px solid rgba(255,255,255,0.05); 
+            color: #cbd5e1; 
+            padding: 8px 14px; 
+            border-radius: 8px; 
+            cursor: pointer; 
+            font-size: 12px; 
+            font-weight: 500;
+            transition: all 0.2s;
+            flex: 1;
+            min-width: 90px;
+        }
+        .std-btn:hover { border-color: #38bdf8; color: white; background: rgba(56,189,248,0.1); }
+
+        /* 📱 Mobile Overrides */
+        @media (max-width: 480px) {
+            .terminal { padding: 25px 20px; border-radius: 20px; }
+            .clock { font-size: 26px; }
+            h1 { font-size: 15px; }
+        }
     </style>
     <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
 </head>
 <body>
 
     <div class="terminal">
-        <h1>Campus Scanner Terminal</h1>
+        <h1>Gate Scan System</h1>
         <div class="clock" id="clock">00:00:00 PM</div>
         
         <div id="reader"></div>
         
-        <div id="status">Scanning Environment Ready</div>
+        <div id="status">Ready for Token Scan</div>
         
-        <div class="quick-text">Manual Test Taps (Fallback)</div>
+        <div class="quick-text">Hardware Simulator Backups</div>
         <div class="student-row">
-            <button class="std-btn" onclick="onScanSuccess('11234')">Dawood (11234)</button>
-            <button class="std-btn" onclick="onScanSuccess('11345')">Azaan (11345)</button>
-            <button class="std-btn" onclick="onScanSuccess('9776')">Hishaam (9776)</button>
+            <button class="std-btn" onclick="onScanSuccess('11234')">Dawood</button>
+            <button class="std-btn" onclick="onScanSuccess('11345')">Azaan</button>
+            <button class="std-btn" onclick="onScanSuccess('9776')">Hishaam</button>
         </div>
 
-        <div class="hint">Hold student card QR badge steady inside the tracking frame box</div>
+        <div class="hint">Ecosystem automatically determines Check-In / Check-Out routing</div>
     </div>
 
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
@@ -66,41 +134,39 @@
             
             lastScannedId = decodedText;
             clearTimeout(scanThrottleTimeout);
-            scanThrottleTimeout = setTimeout(() => { lastScannedId = null; }, 4000);
+            scanThrottleTimeout = setTimeout(() => { lastScannedId = null; }, 3000);
 
             const status = document.getElementById('status');
-            status.innerText = `Token Detected: #${decodedText}`;
-            status.style.color = "#eab308";
+            status.innerText = "Processing Cloud Auth...";
+            status.style.color = "#a855f7";
 
             db.collection("students").doc(decodedText).get().then((doc) => {
                 if (doc.exists) {
-                    const studentName = doc.data().name;
+                    const student = doc.data();
+                    const name = student.name;
+                    const timeNow = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
                     
-                    db.collection("students").doc(decodedText).set({
-                        gateCheckedIn: true,
-                        gateTime: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
-                        currentClassStatus: "In Hallways"
-                    }, { merge: true }).then(() => {
-                        status.innerHTML = `ACCESS GRANTED:<br><span style="color:white; font-size:22px;">${studentName} ✔</span>`;
-                        status.style.color = "#22c55e";
-                        setTimeout(() => { status.innerText = "Scanning Environment Ready"; status.style.color = "#64748b"; }, 3000);
-                    });
+                    let updateFields = {};
+
+                    if (!student.gateCheckedIn || student.currentClassStatus === "Logged Out") {
+                        updateFields = { gateCheckedIn: true, gateTime: timeNow, currentClassStatus: "In Hallways" };
+                        status.innerHTML = `<div><div style="color:#22c55e; font-size:22px; font-weight:700;">ACCESS GRANTED</div><div style="color:#f1f5f9; font-size:14px; margin-top:3px;">Welcome, ${name}</div></div>`;
+                    } else {
+                        updateFields = { gateCheckedIn: false, gateExitTime: timeNow, currentClassStatus: "Logged Out" };
+                        status.innerHTML = `<div><div style="color:#38bdf8; font-size:22px; font-weight:700;">EXIT APPROVED</div><div style="color:#f1f5f9; font-size:14px; margin-top:3px;">Goodbye, ${name}</div></div>`;
+                    }
+
+                    db.collection("students").doc(decodedText).update(updateFields);
+                    setTimeout(() => { status.innerText = "Ready for Token Scan"; status.style.color = "#94a3b8"; }, 4000);
                 } else {
-                    status.innerText = `ERROR: UNKNOWN ID (#${decodedText})`;
+                    status.innerText = "REJECTED: BAD SECURITY SIGNATURE";
                     status.style.color = "#ef4444";
-                    setTimeout(() => { status.innerText = "Scanning Environment Ready"; status.style.color = "#64748b"; }, 3000);
+                    setTimeout(() => { status.innerText = "Ready for Token Scan"; status.style.color = "#94a3b8"; }, 3000);
                 }
-            }).catch(err => {
-                status.innerText = "NETWORK DATABASE TIMEOUT";
-                status.style.color = "#ef4444";
             });
         }
 
-        const html5QrcodeScanner = new Html5QrcodeScanner("reader", { 
-            fps: 10, 
-            qrbox: { width: 250, height: 250 },
-            rememberLastUsedCamera: true
-        });
+        const html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: { width: 250, height: 250 } });
         html5QrcodeScanner.render(onScanSuccess);
     </script>
 </body>

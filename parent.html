@@ -2,26 +2,87 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Parent Guard App</title>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background: #090d16; color: white; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
-        .phone-frame { width: 375px; height: 720px; background: #111827; border: 12px solid #374151; border-radius: 40px; padding: 25px 20px; display: flex; flex-direction: column; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.7); box-sizing: border-box; position: relative; }
-        .phone-frame::before { content: ''; position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: 140px; height: 25px; background: #374151; border-bottom-left-radius: 15px; border-bottom-right-radius: 15px; z-index: 10; }
-        .header { text-align: center; margin-top: 15px; margin-bottom: 20px; }
-        .header h3 { margin: 0; font-size: 20px; font-weight: 600; color: #f3f4f6; }
-        .p-clock { font-family: monospace; font-size: 14px; color: #6b7280; margin-top: 4px; }
-        .notif-feed { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; padding-right: 4px; }
-        .card { background: rgba(31, 41, 55, 0.6); border: 1px solid rgba(255,255,255,0.03); padding: 16px; border-radius: 14px; border-left: 4px solid #3b82f6; backdrop-filter: blur(10px); animation: slide 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
-        .card.danger { border-left-color: #ef4444; background: rgba(220, 38, 38, 0.1); box-shadow: 0 0 20px rgba(239,68,68,0.15); animation: shake 0.4s ease; border-top: 1px solid rgba(239,68,68,0.2); border-right: 1px solid rgba(239,68,68,0.2); }
-        .card.success { border-left-color: #10b981; background: rgba(16, 185, 129, 0.1); }
-        @keyframes slide { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        body { 
+            font-family: '-apple-system', BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; 
+            background: #030712; 
+            color: white; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            min-height: 100vh; 
+            margin: 0; 
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        .phone-frame { 
+            width: 380px; 
+            height: 740px; 
+            background: #0b0f19; 
+            border: 14px solid #1f2937; 
+            border-radius: 48px; 
+            padding: 35px 20px 20px 20px; 
+            display: flex; 
+            flex-direction: column; 
+            box-shadow: 0 30px 70px rgba(0,0,0,0.8); 
+            box-sizing: border-box; 
+            position: relative; 
+        }
+        .phone-frame::before { 
+            content: ''; position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: 150px; height: 28px; background: #1f2937; border-bottom-left-radius: 18px; border-bottom-right-radius: 18px; z-index: 10; 
+        }
+
+        @media (max-width: 480px) {
+            body { background: #0b0f19; }
+            .phone-frame {
+                width: 100vw;
+                height: 100vh;
+                border: none;
+                border-radius: 0;
+                padding: 24px 20px;
+                box-shadow: none;
+            }
+            .phone-frame::before { display: none; }
+        }
+
+        .header { text-align: center; margin-bottom: 25px; }
+        .header h3 { margin: 0; font-size: 22px; font-weight: 700; color: #f3f4f6; letter-spacing: -0.5px; }
+        .p-clock { font-family: monospace; font-size: 14px; color: #4b5563; margin-top: 5px; font-weight: 600; }
+        
+        .notif-feed { 
+            flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 14px; padding-right: 4px;
+            scrollbar-width: none;
+        }
+        .notif-feed::-webkit-scrollbar { display: none; }
+        
+        .card { 
+            background: rgba(17, 24, 39, 0.7); border: 1px solid rgba(255,255,255,0.02); padding: 18px; border-radius: 18px; border-left: 5px solid #4b5563; backdrop-filter: blur(10px); 
+            -webkit-backdrop-filter: blur(10px);
+            animation: slide 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.15);
+        }
+        .card.danger { 
+            border-left-color: #ef4444; background: rgba(220, 38, 38, 0.08); box-shadow: 0 0 25px rgba(239,68,68,0.15); border-top: 1px solid rgba(239,68,68,0.15); border-right: 1px solid rgba(239,68,68,0.15); animation: shake 0.4s ease; 
+        }
+        .card.success { border-left-color: #10b981; background: rgba(16, 185, 129, 0.08); }
+        .card.room { border-left-color: #a855f7; background: rgba(168, 85, 247, 0.08); }
+        .card.exit { border-left-color: #38bdf8; background: rgba(56, 189, 248, 0.06); }
+        
+        @keyframes slide { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes shake { 0%, 100% { transform: translateX(0); } 20%, 60% { transform: translateX(-6px); } 40%, 80% { transform: translateX(6px); } }
-        .card-title { font-size: 14px; font-weight: 700; text-transform: uppercase; tracking: 0.5px; display: flex; justify-content: space-between; }
-        .card-title span { font-size: 11px; font-weight: 400; color: #9ca3af; font-family: monospace; }
-        .card p { margin: 6px 0 0 0; font-size: 13px; color: #d1d5db; line-height: 1.4; }
+        
+        .card-title { font-size: 13px; font-weight: 800; text-transform: uppercase; tracking: 0.5px; display: flex; justify-content: space-between; }
+        .card-title span { font-size: 11px; font-weight: 500; color: #4b5563; font-family: monospace; }
+        .card p { margin: 8px 0 0 0; font-size: 14px; color: #9ca3af; line-height: 1.5; font-weight: 400; }
     </style>
 </head>
 <body>
+
+    <audio id="pingSound" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3" preload="auto"></audio>
+    <audio id="alarmSound" src="https://assets.mixkit.co/active_storage/sfx/951/951-preview.mp3" preload="auto"></audio>
 
     <div class="phone-frame">
         <div class="header">
@@ -29,7 +90,7 @@
             <div class="p-clock" id="pClock">00:00:00 PM</div>
         </div>
         <div class="notif-feed" id="feed">
-            <div style="text-align:center; color:#4b5563; font-size:14px; margin-top:150px;">Awaiting school signal broadcast data...</div>
+            <div style="text-align:center; color:#374151; font-size:14px; margin-top:200px; font-weight:500;">Awaiting School Telemetry Sync...</div>
         </div>
     </div>
 
@@ -52,49 +113,76 @@
         }
         setInterval(updateClock, 1000); updateClock();
 
+        const ping = document.getElementById('pingSound');
+        const alarm = document.getElementById('alarmSound');
+        let currentCache = {};
+
         db.collection("students").onSnapshot((snapshot) => {
             const feed = document.getElementById("feed");
-            feed.innerHTML = ""; 
-            const timeString = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+            const timestamp = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
 
-            snapshot.forEach((doc) => {
-                const student = doc.data();
-                const formattedPeriod = student.lastUpdatedPeriod ? student.lastUpdatedPeriod.replace(/_/g, ' ') : '';
-                
-                if(student.gateCheckedIn && student.currentClassStatus === "In Hallways") {
-                    feed.innerHTML += `
-                        <div class="card success">
-                            <div class="card-title" style="color:#10b981;">🎒 Facility Entry <span>${student.gateTime || timeString}</span></div>
-                            <p>Verification notice: <strong>${student.name}</strong> crossed the main gate entrance detector check.</p>
-                        </div>
-                    `;
-                }
-                
-                if(student.currentClassStatus === "⚠️ TRUANCY ALERT") {
-                    feed.innerHTML += `
-                        <div class="card danger">
-                            <div class="card-title" style="color:#ef4444;">🚨 TRUANCY EMERGENCY <span>${timeString}</span></div>
-                            <p><strong>CRITICAL RISK WARNING:</strong> ${student.name} skipped class during <strong>${formattedPeriod}</strong> despite being logged inside the school building!</p>
-                        </div>
-                    `;
-                }
+            snapshot.docChanges().forEach((change) => {
+                const student = change.doc.data();
+                const id = change.doc.id;
+                if(!["11234", "11345", "9776"].includes(id)) return;
 
-                if(student.currentClassStatus === "Present") {
-                    feed.innerHTML += `
-                        <div class="card success">
-                            <div class="card-title" style="color:#34d399;">✅ Class Attendance <span>${timeString}</span></div>
-                            <p>Instructor verified: <strong>${student.name}</strong> is present at their desk for ${formattedPeriod}.</p>
-                        </div>
-                    `;
-                }
+                if (change.type === "added" || change.type === "modified") {
+                    const formattedPeriod = student.lastUpdatedPeriod ? student.lastUpdatedPeriod.replace(/_/g, ' ') : 'Class';
+                    
+                    // FIXED STATE KEY: Includes lastUpdatedPeriod to ensure a card drops for EVERY period marked Present!
+                    const stateKey = `${id}_${student.gateCheckedIn}_${student.currentClassStatus}_${student.lastUpdatedPeriod || ''}`;
+                    
+                    if (currentCache[id] === stateKey) return; 
+                    currentCache[id] = stateKey;
 
-                if(student.currentClassStatus === "Absent") {
-                    feed.innerHTML += `
-                        <div class="card" style="border-left-color: #6b7280;">
-                            <div class="card-title" style="color:#9ca3af;">ℹ Absence Confirmed <span>${timeString}</span></div>
-                            <p>Standard data log: ${student.name} is noted absent for ${formattedPeriod}. No corresponding gate scan found.</p>
-                        </div>
-                    `;
+                    let notifMarkup = "";
+                    let soundToPlay = null;
+
+                    // Condition 1: High Priority Truancy Flag
+                    if(student.currentClassStatus === "⚠️ TRUANCY ALERT") {
+                        notifMarkup = `
+                            <div class="card danger">
+                                <div class="card-title" style="color:#ef4444;">🚨 CLASS TRUANCY WARNING <span>${timestamp}</span></div>
+                                <p><strong>CRITICAL RISK:</strong> ${student.name} was marked absent from <strong>${formattedPeriod}</strong> but has not exited the school gates!</p>
+                            </div>`;
+                        soundToPlay = alarm;
+                    }
+                    // Condition 2: Clean Check-in to a room (Freshly optimized path)
+                    else if(student.currentClassStatus === "Present") {
+                        notifMarkup = `
+                            <div class="card room">
+                                <div class="card-title" style="color:#c084fc;">📖 Seated in Room <span>${timestamp}</span></div>
+                                <p>Attendance Verified: <strong>${student.name}</strong> has safely arrived inside <strong>${formattedPeriod}</strong>.</p>
+                            </div>`;
+                        soundToPlay = ping;
+                    }
+                    // Condition 3: Campus Check-Out Logged
+                    else if(student.currentClassStatus === "Logged Out") {
+                        notifMarkup = `
+                            <div class="card exit">
+                                <div class="card-title" style="color:#38bdf8;">🔵 Campus Exit 👋 <span>${student.gateExitTime || timestamp}</span></div>
+                                <p>Verified log: <strong>${student.name}</strong> cleared the gate checkout scanner. Heading home.</p>
+                            </div>`;
+                        soundToPlay = ping;
+                    }
+                    // Condition 4: Initial entry passing the front gate scanner
+                    else if(student.gateCheckedIn && student.currentClassStatus === "In Hallways") {
+                        notifMarkup = `
+                            <div class="card success">
+                                <div class="card-title" style="color:#10b981;">🎒 Main Gate Entry <span>${student.gateTime || timestamp}</span></div>
+                                <p><strong>${student.name}</strong> confirmed building entry through front checkpoint parameters.</p>
+                            </div>`;
+                        soundToPlay = ping;
+                    }
+
+                    if(notifMarkup) {
+                        if(feed.innerText.includes("Awaiting School")) feed.innerHTML = "";
+                        feed.innerHTML = notifMarkup + feed.innerHTML;
+                        if(soundToPlay) {
+                            soundToPlay.currentTime = 0;
+                            soundToPlay.play().catch(e => {});
+                        }
+                    }
                 }
             });
         });
